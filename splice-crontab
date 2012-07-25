@@ -1,0 +1,64 @@
+#!/bin/sh
+
+usage() {
+	echo "Usage: splice-crontab [-h] [-i input] [-o output] [-d delimiter] file"
+	if test -n "$1" && test "$1" -eq 0; then
+		exit 0
+	else
+		exit 2
+	fi
+}
+
+delimiter='---spliced'
+input='-'
+output=-''
+
+while getopts :dhio option; do
+	case $option in
+		d)
+			shift
+			delimiter="$1"
+			shift
+			;;
+		i)
+			shift
+			input="$1"
+			shift
+			;;
+		h)
+			shift
+			usage 0
+			;;
+		o)
+			shift
+			output="$1"
+			shift
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+
+file="$1"
+
+if test -z "$file"; then
+	usage
+fi
+
+if test "$input" != '-'; then
+	exec 3<"$input"
+else
+	exec 3<&0
+fi
+
+if test "$output" != '-'; then
+	exec 4>"$output"
+else
+	exec 4>&1
+fi
+
+(sed -e /"$delimiter"/,/"$delimiter"/d;
+echo "#$delimiter";
+cat "$file";
+echo "#$delimiter") <&3 >&4
