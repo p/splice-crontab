@@ -1,0 +1,8 @@
+splice-crontab
+
+Usage
+-----
+
+Update user's crontab with the current application crontab:
+
+crontab -l |./splice-crontab application-crontab-file |crontab -
